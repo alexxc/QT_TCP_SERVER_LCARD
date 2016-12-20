@@ -107,15 +107,15 @@ quint32 len,                                /* (вх) - длина переда�
 const quint8 *data                     /* (вх) - передаваемые данные */
 )
 {
-    quint32 header[ 3 ];
+
     QDataStream sendStream(clientSocket);
+    t_e502_tcp_resp_hdr e502_tcp_resp_hdr;
+    e502_tcp_resp_hdr.sign = SIGNATURE;
+    e502_tcp_resp_hdr.res  = cmd_code;
+    e502_tcp_resp_hdr.len  = len;
 
-    header[ 0 ] = SIGNATURE;
-    header[ 1 ] = cmd_code;
-    header[ 2 ] = len;
 
-
-    sendStream.writeBytes((const char *)header,3);
+    sendStream.writeBytes((const char *)&e502_tcp_resp_hdr,sizeof(e502_tcp_resp_hdr));
     if ((len > 0) && (data != NULL))
        sendStream.writeBytes((const char *)data,len);
 }

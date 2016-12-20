@@ -72,6 +72,14 @@ struct lboot_devinfo_st {
     char spec_info[LBOOT_SPECINFO_SIZE]; /**< резерв */
 };
 typedef struct lboot_devinfo_st t_lboot_devinfo;
+
+
+typedef struct {
+    quint32 sign;
+    quint32 res;  //код возврата (0 - ОК, <0 - ошибка)
+    quint32 len; //кол-во данных в ответе
+} t_e502_tcp_resp_hdr;
+
 #pragma pack(pop)
 
 namespace Ui {
