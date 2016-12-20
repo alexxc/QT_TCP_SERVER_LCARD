@@ -46,6 +46,34 @@
 
 #define DESC_MODULE_NAME_SIZE          (16)
 
+#define E502_CM4_DEVFLAGS (X502_DEVFLAGS_IFACE_SUPPORT_ETH | \
+                            X502_DEVFLAGS_INDUSTRIAL | \
+                            X502_DEVFLAGS_FPGA_LOADED)
+
+
+#define E502_DEVICE_NAME "E502"
+
+
+#define LBOOT_DEVNAME_SIZE            32
+#define LBOOT_SERIAL_SIZE             32
+#define LBOOT_SOFTVER_SIZE            32
+#define LBOOT_REVISION_SIZE           16
+#define LBOOT_IMPLEMENTATION_SIZE     16
+#define LBOOT_SPECINFO_SIZE           64
+
+
+#pragma pack(push, 1)
+struct lboot_devinfo_st {
+    char devname[LBOOT_DEVNAME_SIZE]; /**< название устройства */
+    char serial[LBOOT_SERIAL_SIZE];   /**< серийный номер */
+    char soft_ver[LBOOT_SOFTVER_SIZE]; /**< версия прошивки */
+    char brd_revision[LBOOT_REVISION_SIZE]; /**< ревизия платы */
+    char brd_impl[LBOOT_IMPLEMENTATION_SIZE]; /**< опции платы */
+    char spec_info[LBOOT_SPECINFO_SIZE]; /**< резерв */
+};
+typedef struct lboot_devinfo_st t_lboot_devinfo;
+#pragma pack(pop)
+
 namespace Ui {
     class MainWindow;
 }

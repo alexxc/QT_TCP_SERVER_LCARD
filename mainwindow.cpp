@@ -7,7 +7,9 @@ static qint32 f_dataconn;
 static quint32 f_ethcommand[ 128 ];
 static qint32 f_init_require;
 
-quint8 g_altera_info[ 510 ];
+//quint8 g_altera_info[ 510 ];
+
+t_lboot_devinfo devinfo;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -20,11 +22,13 @@ MainWindow::MainWindow(QWidget *parent) :
     f_init_require = 0;
 
 
-    for (quint16 i = 0; (i < 510); i += 2)
-     {
-        g_altera_info[ i ]   = 0x00;
-        g_altera_info[ i+1 ] = 0xE0;
-     }
+//    for (quint16 i = 0; (i < 510); i += 2)
+//     {
+//        g_altera_info[ i ]   = 0x00;
+//        g_altera_info[ i+1 ] = 0xE0;
+//     }
+
+    strcpy(devinfo.devname,E502_DEVICE_NAME);
 }
 
 MainWindow::~MainWindow()
@@ -82,14 +86,10 @@ void MainWindow::slotReadClient()
 {
     QByteArray data;
     QTcpSocket* clientSocket = (QTcpSocket*)sender();
-    int idusersocs=clientSocket->socketDescriptor();
-    QTextStream os(clientSocket);
-//    os.setAutoDetectUnicode(true);
-//    os << "HTTP/1.0 200 Ok\r\n"
-//          "Content-Type: text/html; charset=\"utf-8\"\r\n"
-//          "\r\n"
-//          "<h1>Nothing to see here</h1>\n"
-//          << QDateTime::currentDateTime().toString() << "\n";
+//    int idusersocs=clientSocket->socketDescriptor();
+ //   QTextStream os(clientSocket);
+//
+
 
     data=clientSocket->readAll();
     processCommand(clientSocket,data);
@@ -109,7 +109,6 @@ const quint8 *data                     /* (вх) - передаваемые да
 {
     quint32 header[ 3 ];
     QDataStream sendStream(clientSocket);
-    quint8 * ptr_header=(quint8 *)header;
 
     header[ 0 ] = SIGNATURE;
     header[ 1 ] = cmd_code;
@@ -130,14 +129,13 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
     case ETHCMD_INIT:
         if (f_dataconn)
             f_init_require = 1;
-        sendCommand( clientSocket, ETHRETCODE_OK, 510, g_altera_info);
+        sendCommand( clientSocket, ETHRETCODE_OK, sizeof(devinfo), (const quint8 *)&devinfo);
         break;
     case ETHCMD_NOP:
         sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
         break;
     case ETHCMD_GETNAME:
-        sendCommand( clientSocket, ETHRETCODE_OK, DESC_MODULE_NAME_SIZE,
-            /*(t_uint8 *)Descr.Descr.Name*/NULL );
+        sendCommand( clientSocket, ETHRETCODE_OK, LBOOT_DEVNAME_SIZE, (const quint8 *)devinfo.devname );
         break;
     case ETHCMD_GETARRAY:
 //        f_get_array_cmd( clientSocket, command_buf[ ETHREQIDX_CMDPARAM ] >> 24,
