@@ -174,6 +174,21 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
         sendCommand( clientSocket, ETHRETCODE_OK, sizeof(stream_is_running),( const quint8 *)&stream_is_running );
         break;
 
+    case E502_CM4_CMD_STREAM_START:
+        stream_is_running=1;
+        sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        break;
+
+    case E502_CM4_CMD_STREAM_STOP:
+        stream_is_running=0;
+        sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        break;
+
+    case E502_CM4_CMD_STREAM_SET_STEP:
+
+        sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        break;
+
     }
 }
 
