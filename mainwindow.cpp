@@ -46,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     devflags=(X502_DEVFLAGS_IFACE_SUPPORT_ETH | X502_DEVFLAGS_INDUSTRIAL | X502_DEVFLAGS_FPGA_LOADED);
     bf_ctl=0x0;
+    stream_is_running=0x0;
 }
 
 MainWindow::~MainWindow()
@@ -163,6 +164,14 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
 
     case E502_CM4_CMD_FPGA_REG_READ:
         sendCommand( clientSocket, ETHRETCODE_OK, sizeof(bf_ctl), (const quint8 *)&bf_ctl );
+        break;
+
+    case E502_CM4_CMD_FPGA_REG_WRITE:
+        sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        break;
+
+    case E502_CM4_CMD_STREAM_IS_RUNNING:
+        sendCommand( clientSocket, ETHRETCODE_OK, sizeof(stream_is_running),( const quint8 *)&stream_is_running );
         break;
 
     }

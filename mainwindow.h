@@ -181,6 +181,7 @@ private:
     quint32 devflags;
     t_lboot_devinfo devinfo;
     quint32 bf_ctl;
+    quint8 stream_is_running;
 
 
     void sendCommand(QTcpSocket* clientSocket, quint32 cmd_code, quint32 len, const quint8 *data);
