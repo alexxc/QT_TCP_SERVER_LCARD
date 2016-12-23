@@ -149,6 +149,14 @@ void MainWindow::newuser_data()
     }
 }
 
+void MainWindow::on_TestDataTimer_Timeout()
+{
+    if(server_data_status==1)
+    {
+        
+    }
+}
+
 void MainWindow::slotReadClient_cmd()
 {
     QByteArray data;

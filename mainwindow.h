@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QByteArray>
 #include <QDebug>
+#include <QTimer>
 
 
 #define SIGNATURE 0x314C5443
@@ -16,8 +17,11 @@
 #define ETHRETCODE_OK (0)
 #define ETHRETCODE_ERROR (1)
 
-#define LTRETH_CMD_PORT (11113)
-#define LTRETH_DATA_PORT (11110)
+
+#define E502_TCP_DEFAULT_CMD_PORT   (11114)
+#define E502_TCP_DEFAULT_DATA_PORT  (11115)
+
+
 #define ETH_COMMAND_LEN (16)
 #define ETH_HEADER_LEN (20)
 
@@ -133,6 +137,34 @@ typedef enum {
 #define LBOOT_SPECINFO_SIZE           64
 
 
+
+#define X502_REGS_BF_CTL_BLOCK               0
+#define X502_REGS_BF_CTL                     (X502_REGS_BF_CTL_BLOCK+0)
+
+
+#define X502_REGS_IOHARD_BLOCK                    0x0200
+//Адрес Control Table
+#define X502_REGS_IOHARD_LTABLE                   (X502_REGS_IOHARD_BLOCK+0)
+#define X502_REGS_IOHARD_LTABLE_MAX_SIZE          0x100 // Максимальный размер Control Table
+
+#define X502_REGS_IOHARD_LCH_CNT                  (X502_REGS_IOHARD_BLOCK+0x100)
+#define X502_REGS_IOHARD_ADC_FREQ_DIV             (X502_REGS_IOHARD_BLOCK+0x102)
+#define X502_REGS_IOHARD_ADC_FRAME_DELAY          (X502_REGS_IOHARD_BLOCK+0x104)
+#define X502_REGS_IOHARD_DIGIN_FREQ_DIV           (X502_REGS_IOHARD_BLOCK+0x106)
+#define X502_REGS_IOHARD_IO_MODE                  (X502_REGS_IOHARD_BLOCK+0x108)
+#define X502_REGS_IOHARD_GO_SYNC_IO               (X502_REGS_IOHARD_BLOCK+0x10A)
+#define X502_REGS_IOHARD_PRELOAD_ADC              (X502_REGS_IOHARD_BLOCK+0x10C)
+#define X502_REGS_IOHARD_ASYNC_OUT                (X502_REGS_IOHARD_BLOCK+0x112)
+#define X502_REGS_IOHARD_LED                      (X502_REGS_IOHARD_BLOCK+0x114)
+#define X502_REGS_IOHARD_DIGIN_PULLUP             (X502_REGS_IOHARD_BLOCK+0x116)
+#define X502_REGS_IOHARD_OUTSWAP_BFCTL            (X502_REGS_IOHARD_BLOCK+0x118)
+#define X502_REGS_IOHARD_OUTSWAP_ERROR            (X502_REGS_IOHARD_BLOCK+0x120)
+
+
+#define X502_REGBIT_ADC_SLV_CLK_LOCK_Pos      31
+#define X502_REGBIT_ADC_SLV_CLK_LOCK_Msk      (0x1UL << X502_REGBIT_ADC_SLV_CLK_LOCK_Pos)
+
+
 //#pragma pack(push, 1)
 struct lboot_devinfo_st {
     char devname[LBOOT_DEVNAME_SIZE]; /**< название устройства */
@@ -170,17 +202,26 @@ public:
 private slots:
     void on_starting_clicked();
     void on_stoping_clicked();
-    void newuser();
-    void slotReadClient();
+    void on_TestDataTimer_Timeout();
+    void newuser_cmd();
+    void newuser_data();
+    void slotReadClient_cmd();
+   // void slotReadClient_data();
 
 private:
     Ui::MainWindow *ui;
-    QTcpServer *tcpServer;
-    int server_status;
-    QMap<int,QTcpSocket *> SClients;
+    QTcpServer *tcpServer_cmd;
+    QTcpServer *tcpServer_data;
+    QTimer *TestDataTimer;
+
+    int server_cmd_status;
+    int server_data_status;
+    QMap<int,QTcpSocket *> SClients_cmd;
+    QMap<int,QTcpSocket *> SClients_data;
     quint32 devflags;
     t_lboot_devinfo devinfo;
     quint32 bf_ctl;
+    quint32 clk_lock;
     quint8 stream_is_running;
 
 
