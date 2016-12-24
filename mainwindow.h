@@ -142,7 +142,7 @@ typedef enum {
 #define X502_REGS_BF_CTL                     (X502_REGS_BF_CTL_BLOCK+0)
 
 
-#define X502_REGS_IOHARD_BLOCK                    0x0200
+#define X502_REGS_IOHARD_BLOCK                    0x0200//0x0000//
 //Адрес Control Table
 #define X502_REGS_IOHARD_LTABLE                   (X502_REGS_IOHARD_BLOCK+0)
 #define X502_REGS_IOHARD_LTABLE_MAX_SIZE          0x100 // Максимальный размер Control Table
@@ -206,12 +206,14 @@ private slots:
     void newuser_cmd();
     void newuser_data();
     void slotReadClient_cmd();
-   // void slotReadClient_data();
+    void slotReadClient_data();
 
 private:
     Ui::MainWindow *ui;
     QTcpServer *tcpServer_cmd;
     QTcpServer *tcpServer_data;
+    QTcpSocket* clientSocket_data;
+
     QTimer *TestDataTimer;
 
     int server_cmd_status;

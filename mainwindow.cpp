@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     TestDataTimer=new QTimer(this);
     TestDataTimer->setInterval(10);
-    connect(TestDataTimer, SIGNAL(timeout()), this, SLOT(on_TestDataTimer_Timeout());
+    connect(TestDataTimer, SIGNAL(timeout()), this, SLOT(on_TestDataTimer_Timeout()));
 
     strcpy(devinfo.devname,E502_DEVICE_NAME);
     strcpy(devinfo.serial,E502_DEVICE_SERIAL);
@@ -95,9 +95,6 @@ void MainWindow::on_stoping_clicked()
     if(server_cmd_status==1)
     {
         foreach(int i,SClients_cmd.keys()){
-            QTextStream os(SClients_cmd[i]);
-            os.setAutoDetectUnicode(true);
-            os << QDateTime::currentDateTime().toString() << "\n";
             SClients_cmd[i]->close();
             SClients_cmd.remove(i);
         }
@@ -111,9 +108,6 @@ void MainWindow::on_stoping_clicked()
     if(server_data_status==1)
     {
         foreach(int i,SClients_data.keys()){
-            QTextStream os(SClients_data[i]);
-            os.setAutoDetectUnicode(true);
-            os << QDateTime::currentDateTime().toString() << "\n";
             SClients_data[i]->close();
             SClients_data.remove(i);
         }
@@ -142,10 +136,11 @@ void MainWindow::newuser_data()
     if(server_data_status==1){
         qDebug() << QString::fromUtf8("New data connection!");
         ui->textinfo->append(QString::fromUtf8("New data connection!"));
-        QTcpSocket* clientSocket=tcpServer_data->nextPendingConnection();
-        int idusersocs=clientSocket->socketDescriptor();
-        SClients_data[idusersocs]=clientSocket;
-        //connect(SClients_data[idusersocs],SIGNAL(readyRead()),this, SLOT(slotReadClient()));
+        clientSocket_data=tcpServer_data->nextPendingConnection();
+        int idusersocs=clientSocket_data->socketDescriptor();
+        SClients_data[idusersocs]=clientSocket_data;
+        connect(SClients_data[idusersocs],SIGNAL(readyRead()),this, SLOT(slotReadClient_data()));
+        //TestDataTimer->start();
     }
 }
 
@@ -156,13 +151,43 @@ void MainWindow::slotReadClient_cmd()
     int idusersocs=clientSocket->socketDescriptor();
 
     data=clientSocket->readAll();
-    ui->textinfo->append("ReadClient:"+ data +"\n\r");
+    ui->textinfo->append("ReadClient cmd:"+ data +"\n\r");
 
     processCommand(clientSocket,data);
 
     // Если нужно закрыть сокет
   //  clientSocket->close();
   //  SClients.remove(idusersocs);
+}
+
+
+void MainWindow::slotReadClient_data()
+{
+    QByteArray data;
+    QTcpSocket* clientSocket = (QTcpSocket*)sender();
+    int idusersocs=clientSocket->socketDescriptor();
+
+    data=clientSocket->readAll();
+    ui->textinfo->append("ReadClient data:"+ data +"\n\r");
+
+    //processCommand(clientSocket,data);
+
+    // Если нужно закрыть сокет
+  //  clientSocket->close();
+  //  SClients.remove(idusersocs);
+}
+
+void MainWindow::on_TestDataTimer_Timeout()
+{
+    quint32 test_data[24];
+
+    for(quint8 i =0;i<24;i++)
+    {
+      test_data[i]=((i|(((1)&0x0F)<<24))|0x80000000);
+    }
+
+    QDataStream sendStream(clientSocket_data);
+    sendStream.writeRawData((const char *)test_data,sizeof(test_data));
 }
 
 void MainWindow::sendCommand(
@@ -195,6 +220,7 @@ quint32 *command_buf=(quint32*)data.data();
 QByteArray devinfo_data;
 QDataStream DevInfoStream(&devinfo_data,QIODevice::ReadWrite);
 DevInfoStream.setByteOrder(QDataStream::LittleEndian);
+const quint8 null_buf[32]={0};
 
 switch (command_buf[ ETHREQIDX_CMDCODE ])
     {
@@ -222,6 +248,10 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
             case X502_REGS_IOHARD_IO_MODE:
                 sendCommand( clientSocket, ETHRETCODE_OK, sizeof(clk_lock), (const quint8 *)&clk_lock );
             break;
+
+            case X502_REGS_IOHARD_GO_SYNC_IO:
+                sendCommand( clientSocket, ETHRETCODE_OK, sizeof(clk_lock), (const quint8 *)&clk_lock );
+            break;
         }
         break;
 
@@ -239,14 +269,28 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
     case E502_CM4_CMD_STREAM_START:
         stream_is_running=1;
         sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        TestDataTimer->start();
         break;
 
     case E502_CM4_CMD_STREAM_STOP:
         stream_is_running=0;
         sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        TestDataTimer->stop();
         break;
 
     case E502_CM4_CMD_STREAM_SET_STEP:
+
+        sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
+        break;
+
+    case E502_CM4_CMD_TEST_GET_STATE:
+
+
+        sendCommand( clientSocket, ETHRETCODE_OK, 32, null_buf );
+        break;
+
+
+    case E502_CM4_CMD_DROP_DATA_CON:
 
         sendCommand( clientSocket, ETHRETCODE_OK, 0, NULL );
         break;
