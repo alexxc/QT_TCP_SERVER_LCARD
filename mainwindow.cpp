@@ -252,6 +252,10 @@ switch (command_buf[ ETHREQIDX_CMDCODE ])
             case X502_REGS_IOHARD_GO_SYNC_IO:
                 sendCommand( clientSocket, ETHRETCODE_OK, sizeof(clk_lock), (const quint8 *)&clk_lock );
             break;
+
+            case 0x10A:
+                sendCommand( clientSocket, ETHRETCODE_OK, sizeof(clk_lock), (const quint8 *)&clk_lock );
+            break;
         }
         break;
 
