@@ -13,13 +13,6 @@ QDataStream &operator<<(QDataStream &out, const t_e502_tcp_resp_hdr &tcp_resp_hd
 
 QDataStream &operator<<(QDataStream &out, const t_lboot_devinfo &lboot_devinfo)
 {
-//    out.writeBytes(lboot_devinfo.devname,LBOOT_DEVNAME_SIZE);
-//    out.writeBytes(lboot_devinfo.serial,LBOOT_SERIAL_SIZE);
-//    out.writeBytes(lboot_devinfo.soft_ver,LBOOT_SOFTVER_SIZE);
-//    out.writeBytes(lboot_devinfo.brd_revision,LBOOT_REVISION_SIZE);
-//    out.writeBytes(lboot_devinfo.brd_impl,LBOOT_IMPLEMENTATION_SIZE);
-//    out.writeBytes(lboot_devinfo.spec_info,LBOOT_SPECINFO_SIZE);
-
     out.writeRawData(lboot_devinfo.devname,LBOOT_DEVNAME_SIZE);
     out.writeRawData(lboot_devinfo.serial,LBOOT_SERIAL_SIZE);
     out.writeRawData(lboot_devinfo.soft_ver,LBOOT_SOFTVER_SIZE);
@@ -177,17 +170,33 @@ void MainWindow::slotReadClient_data()
   //  SClients.remove(idusersocs);
 }
 
+
+#define STREAM_IN_ADC_FLAG (0x80000000)
+#define STREAM_IN_ADC_CHN(x) (((x)&0x0F)<<24)
+#define STREAM_IN_ADC_MODE(x) (((x)&0x03)<<28)
+
 void MainWindow::on_TestDataTimer_Timeout()
 {
-    quint32 test_data[24];
-
-    for(quint8 i =0;i<24;i++)
-    {
-      test_data[i]=((i|(((1)&0x0F)<<24))|0x80000000);
-    }
-
+    quint32 test_data[8000];
     QDataStream sendStream(clientSocket_data);
+
+    for(quint16 i =0;i<8000;i+=8)
+    {
+
+      for(quint8 k=0;k<8;k++)
+      {
+        test_data[i+k]=(((i+k)|STREAM_IN_ADC_CHN(k))| STREAM_IN_ADC_MODE(X502_LCH_MODE_COMM)|STREAM_IN_ADC_FLAG);
+      }
+      //test_data[i+1]=((i|STREAM_IN_ADC_CHN(1))| STREAM_IN_ADC_MODE(X502_LCH_MODE_COMM)|STREAM_IN_ADC_FLAG);
+    }
     sendStream.writeRawData((const char *)test_data,sizeof(test_data));
+
+
+//    for(quint16 i =0;i<10000;i++)
+//    {
+//      test_data[i]=((i|STREAM_IN_ADC_CHN(1))| STREAM_IN_ADC_MODE(X502_LCH_MODE_COMM)|STREAM_IN_ADC_FLAG);
+//    }
+//    sendStream.writeRawData((const char *)test_data,sizeof(test_data));
 }
 
 void MainWindow::sendCommand(

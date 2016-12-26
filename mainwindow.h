@@ -117,6 +117,12 @@ typedef enum {
     X502_DEVFLAGS_DEVREC_OPENED          = 0x01000000
 } t_x502_dev_flags;
 
+typedef enum {
+    X502_LCH_MODE_COMM = 1, /**< Измерение напряжения относительно общей земли */
+    X502_LCH_MODE_DIFF = 0, /**< Дифференциальное измерение напряжения */
+    X502_LCH_MODE_ZERO = 3  /**< Измерение собственного нуля */
+} t_x502_lch_mode;
+
 
 #define DESC_MODULE_NAME_SIZE          (16)
 
@@ -165,7 +171,6 @@ typedef enum {
 #define X502_REGBIT_ADC_SLV_CLK_LOCK_Msk      (0x1UL << X502_REGBIT_ADC_SLV_CLK_LOCK_Pos)
 
 
-//#pragma pack(push, 1)
 struct lboot_devinfo_st {
     char devname[LBOOT_DEVNAME_SIZE]; /**< название устройства */
     char serial[LBOOT_SERIAL_SIZE];   /**< серийный номер */
@@ -183,7 +188,7 @@ struct t_e502_tcp_resp_hdr_st{
     quint32 len; //кол-во данных в ответе
 } ;
 typedef struct t_e502_tcp_resp_hdr_st t_e502_tcp_resp_hdr;
-//#pragma pack(pop)
+
 
 namespace Ui {
     class MainWindow;
